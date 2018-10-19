@@ -110,7 +110,9 @@ class File(tables.File):
 
         # Inspect the first CArray object to determine its shape
         if len(self) > 0:
-            self._shape = self.iter_nodes(self.root.data,'CArray').next().shape
+            # jwd: generator has no next funtion in python 3 
+            # next() function supported in both in python 2.6+ and python 3
+            self._shape = next(self.iter_nodes(self.root.data,'CArray')).shape
 
             # Store it if we can
             if self._iswritable():

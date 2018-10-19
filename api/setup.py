@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 setup(
     name='OpenMatrix',
     keywords='openmatrix omx',
-    version='0.3.4',
+    version='0.3.4.1',
     author='Billy Charlton, Ben Stabler',
     author_email='billy@okbecause.com, benstabler@yahoo.com',
     packages=find_packages(),
