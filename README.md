@@ -5,6 +5,8 @@ The Python OMX API borrows heavily from PyTables. An OMX file extends the equiva
 * [Pre-requisites](#pre-requisites)
 * [Installation](#installation)
 * [Quick Start Code](#quick-start-sample-code)
+* [Testing](#testing)
+* [OMX File Validator](#omx-file-validator)
 * [Usage Notes](#usage-notes)
 * [API Reference](#api-reference)
 
