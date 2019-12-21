@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 setup(
     name='OpenMatrix',
     keywords='openmatrix omx',
-    version='0.3.4.1',
+    version='0.3.5.0',
     author='Billy Charlton, Ben Stabler',
     author_email='billy@okbecause.com, benstabler@yahoo.com',
     packages=find_packages(),
@@ -20,5 +20,11 @@ setup(
     ],
     classifiers=[
         'License :: OSI Approved :: Apache Software License'
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'omx-validate = openmatrix.validator:command_line',
+        ],
+    }
+
 )
