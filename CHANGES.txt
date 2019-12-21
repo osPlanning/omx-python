@@ -4,5 +4,6 @@ v0.2.2, 2015-01-15 -- Fix test to reference openmatrix instead of omx
 v0.2.3, 2015-02-20 -- Bug fixes and lots more tests
 v0.3.3, 2017-03-07 -- Python 3 compatible
 v0.3.4, 2018-04-05 -- Fix incorrect version being saved
-
+v0.3.4.1, 2018-10-19 -- python3 compatible next for generator
+v0.3.5, 2019-12-21 -- add validator and clean-up repo structure
 
