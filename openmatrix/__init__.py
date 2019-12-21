@@ -8,7 +8,7 @@ from .Exceptions import *
 
 # GLOBAL VARIABLES -----------
 __version__ = '0.3.3'
-__omx_version__ = '0.2'
+__omx_version__ = b'0.2'
 
 # GLOBAL FUNCTIONS -----------
 def open_file(filename, mode='r', title='', root_uep='/',

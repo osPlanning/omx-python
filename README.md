@@ -5,6 +5,8 @@ The Python OMX API borrows heavily from PyTables. An OMX file extends the equiva
 * [Pre-requisites](#pre-requisites)
 * [Installation](#installation)
 * [Quick Start Code](#quick-start-sample-code)
+* [Testing](#testing)
+* [OMX File Validator](#omx-file-validator)
 * [Usage Notes](#usage-notes)
 * [API Reference](#api-reference)
 
@@ -112,6 +114,20 @@ print('cell value:', m3[tazs[100]][tazs[100]]) # 3.0  (taz (100,100) is cell [99
 myfile.close()
 ```
 
+# Testing
+Testing is done with [nose](https://nose.readthedocs.io/en/latest/).  Run the tests via:
+
+```
+openmatrix\test> nosetests -v
+```
+
+# OMX File Validator
+Included in this package is a command line OMX file validation tool used to validate OMX files against the specification.  The tool is added to the system PATH when the package is installed and can be run as follows:
+
+```
+omx-validate my_file.omx
+```
+
 # Usage Notes
 
 ### File Objects
@@ -181,7 +197,7 @@ A mapping allows rows and columns to be accessed using an integer value other th
 ## Global Properties
 
 ### `__version__`
-OMX module version string.  Currently '0.3.3' as of this writing. This is the Python API version.
+OMX module version string.  Currently '0.3.5' as of this writing. This is the Python API version.
 
 ### `__omx_version__`
 OMX file format version. Currently '0.2'. This is the OMX file format specification that omx-python adheres to.
@@ -212,7 +228,7 @@ OMX file format version. Currently '0.2'. This is the OMX file format specificat
             See HDF5 docs for more detail.
         shape: numpy.array
             Shape of matrices in this file. Default is None. Specify a valid shape 
-            (e.g. (1000,1200)) to enforce shape-checking for all added objects. 
+            (e.g. (1200,1200)) to enforce shape-checking for all added objects. 
             If shape is not specified, the first added matrix will not be shape-checked 
             and all subsequently added matrices must match the shape of the first matrix.
             All tables in an OMX file must have the same shape.
