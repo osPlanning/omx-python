@@ -38,7 +38,7 @@ def open_file(filename, mode='r', title='', root_uep='/',
         'None' will create enormous uncompressed files.
         Only 'zlib' compression is guaranteed to be available on all HDF5 implementations.
         See HDF5 docs for more detail.
-    shape: numpy.array
+    shape: array-like
         Shape of matrices in this file. Default is None. Specify a valid shape 
         (e.g. (1000,1200)) to enforce shape-checking for all added objects. 
         If shape is not specified, the first added matrix will not be shape-checked 
@@ -62,7 +62,7 @@ def open_file(filename, mode='r', title='', root_uep='/',
 
         # shape
         if shape:
-            storeshape = numpy.array([shape[0],shape[1]], dtype='int32')
+            storeshape = np.array([shape[0],shape[1]], dtype='int32')
             f.root._v_attrs['SHAPE'] = storeshape
 
         # /data and /lookup folders
