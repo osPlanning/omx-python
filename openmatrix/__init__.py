@@ -73,6 +73,43 @@ def open_file(filename, mode='r', title='', root_uep='/',
 
     return f
 
+  def read_pandas(filename, mapping=None, matrix_name=None):
+    """
+    Reads the .omx file, gets the mapping and matrix values
+    and return the pandas DataFrame
+    Parameters
+    ----------
+    filename - path to the .omx file
+    mapping - str of mapping in the omx file (if None takes the first mapping)
+    matrix_name - str of the matrix name (if None takes the first matrix name)
+
+    Returns
+    -------
+    pandas DataFrame. index = mapping, columns = mapping, values = matrix values
+
+    author: Rafal Kucharski rafal.kucharski@uj.edu.pl
+    """
+    import pandas as pd
+    try:
+        omx_file = open_file(filename)
+    except:
+        raise Exception('Error whle reading a file: ', filename)
+    if mapping is None:
+        mapping = omx_file.list_mappings()[0]
+    if matrix_name is None:
+        matrix_name = omx_file.list_matrices()[0]
+
+    try:
+        values = np.array(omx_file[matrix_name])
+    except:
+        raise Exception('Wrong matrix name in the omx file')
+    try:
+        mapping = omx_file.mapping(mapping)
+    except:
+        raise Exception('Wrong mapping name name in the omx file')
+
+    return pd.DataFrame(index=mapping, columns=mapping, data=values)
+
 
 if __name__ == "__main__":
     print('OMX!')
