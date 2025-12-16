@@ -11,19 +11,17 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - name: Set Python environment
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v1
+          python-version: '3.13'
+
+      - uses: astral-sh/ruff-action@v3
         with:
-          cache: true
-      - name: Install and lint
-        run: |
-          uv venv
-          uv pip install -e .[dev]
-          uv run ruff check .
+          version: 0.14.8
+          args: check --output-format=github
+
 
   test:
     needs: lint
