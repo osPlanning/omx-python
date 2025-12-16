@@ -24,10 +24,10 @@ class File(h5py.File):
         else:
             return None
 
-    def create_matrix(self, name, atom=None, shape=None, title="", filters=None, chunkshape=None, obj=None, attrs=None):
+    def create_matrix(self, name, shape=None, title="", filters=None, chunks=True, obj=None, dtype=None, attrs=None):
         """
         Create an OMX Matrix (Dataset) at the root level. User must pass in either
-        an existing numpy matrix, or a shape and an atom type.
+        an existing numpy matrix, or a shape and a dtype.
         """
 
         # If object was passed in, make sure its shape is correct
@@ -36,21 +36,13 @@ class File(h5py.File):
 
         # Determine dshape and dtype
         dshape = shape
-        dtype = None
         data = obj
-
         if obj is not None:
             dshape = obj.shape
             dtype = obj.dtype
-        elif atom is not None:
-            # Try to infer dtype from atom if it's a tables atom, otherwise assume it's a dtype
-            if hasattr(atom, "dtype"):
-                dtype = atom.dtype
-            else:
-                dtype = atom
 
-        if dshape is None:
-            raise ValueError("Shape must be specified if obj is None")
+        if dshape is None or dtype is None:
+            raise ValueError("Shape and dtype must be specified if obj is None")
 
         # Handle compression
         compression = None
@@ -88,10 +80,8 @@ class File(h5py.File):
             kwargs["compression_opts"] = compression_opts
         if shuffle:
             kwargs["shuffle"] = shuffle
-        if chunkshape:
-            kwargs["chunks"] = chunkshape
-        else:
-            kwargs["chunks"] = True  # Auto-chunking
+        if chunks:
+            kwargs["chunks"] = chunks
 
         matrix = (
             super(File, self).__getitem__("data").create_dataset(name, shape=dshape, dtype=dtype, data=data, **kwargs)
