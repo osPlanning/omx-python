@@ -6,7 +6,7 @@ from .exceptions import ShapeError
 
 class File(h5py.File):
     """
-    OMX File class, which contains all the methods for adding, removing, manipulating tables
+    OMX File class, which contains all the methods for adding, removing, manipulating matrices
     and mappings in an OMX file.
     """
 
@@ -24,19 +24,7 @@ class File(h5py.File):
         else:
             return None
 
-    def create_matrix(
-        self,
-        name,
-        atom=None,
-        shape=None,
-        title="",
-        filters=None,
-        chunkshape=None,
-        byteorder=None,
-        createparents=False,
-        obj=None,
-        attrs=None,
-    ):
+    def create_matrix(self, name, atom=None, shape=None, title="", filters=None, chunkshape=None, obj=None, attrs=None):
         """
         Create an OMX Matrix (Dataset) at the root level. User must pass in either
         an existing numpy matrix, or a shape and an atom type.
@@ -44,7 +32,7 @@ class File(h5py.File):
 
         # If object was passed in, make sure its shape is correct
         if self.shape() is not None and obj is not None and obj.shape != self.shape():
-            raise ShapeError("%s has shape %s but this file requires shape %s" % (name, obj.shape, self.shape()))
+            raise ShapeError(f"{name} has shape {obj.shape} but this file requires shape {self.shape()}")
 
         # Determine dshape and dtype
         dshape = shape
@@ -197,7 +185,7 @@ class File(h5py.File):
             lookup = super(File, self).__getitem__("lookup")
             del lookup[title]
         except Exception:
-            raise LookupError("No such mapping: " + title)
+            raise LookupError(f"No such mapping: {title}")
 
     def mapping(self, title):
         """
@@ -206,11 +194,11 @@ class File(h5py.File):
         try:
             # fetch entries
             if not super(File, self).__contains__("lookup"):
-                raise LookupError("No such mapping: " + title)
+                raise LookupError(f"No such mapping: {title}")
 
             lookup = super(File, self).__getitem__("lookup")
             if title not in lookup:
-                raise LookupError("No such mapping: " + title)
+                raise LookupError(f"No such mapping: {title}")
 
             entries = lookup[title][:]
 
@@ -224,17 +212,17 @@ class File(h5py.File):
         except Exception as e:
             if isinstance(e, LookupError):
                 raise e
-            raise LookupError("No such mapping: " + title)
+            raise LookupError(f"No such mapping: {title}")
 
     def map_entries(self, title):
         """Return a list of entries for the specified mapping."""
         try:
             if not super(File, self).__contains__("lookup"):
-                raise LookupError("No such mapping: " + title)
+                raise LookupError(f"No such mapping: {title}")
 
             lookup = super(File, self).__getitem__("lookup")
             if title not in lookup:
-                raise LookupError("No such mapping: " + title)
+                raise LookupError(f"No such mapping: {title}")
 
             entries = lookup[title][:]
             # Convert to list if it's a numpy array
@@ -245,7 +233,7 @@ class File(h5py.File):
         except Exception as e:
             if isinstance(e, LookupError):
                 raise e
-            raise LookupError("No such mapping: " + title)
+            raise LookupError(f"No such mapping: {title}")
 
     def create_mapping(self, title, entries, overwrite=False):
         """
@@ -263,7 +251,7 @@ class File(h5py.File):
             if overwrite:
                 self.delete_mapping(title)
             else:
-                raise LookupError(title + " mapping already exists.")
+                raise LookupError(f"{title} mapping already exists.")
 
         # Create lookup group under root if it doesn't already exist.
         if not super(File, self).__contains__("lookup"):
@@ -290,17 +278,14 @@ class File(h5py.File):
                 if key in data_group:
                     return data_group[key]
 
-            # Fallback: check if it's a group in root (e.g. if user created 'results' group)
             if super(File, self).__contains__(key):
                 return super(File, self).__getitem__(key)
 
             # If not found
-            raise LookupError("Key %s not found" % key)
+            raise LookupError(f"Key {key} not found")
 
         if "keys" not in dir(key):
-            # Try super for slicing etc?
-            # But key is likely a dict for attributes
-            raise LookupError("Key %s not found" % key)
+            raise LookupError(f"Key {key} not found")
 
         # Loop through key/value pairs (attribute lookup)
         mats = []
@@ -375,8 +360,6 @@ class File(h5py.File):
         except Exception:
             pass
 
-    # No __iter__ needed? h5py.File helper iterates over keys (groups).
-    # omx.File __iter__ iterates over MATRICES (in data).
     def __iter__(self):
         """Iterate over the keys in this container"""
         if super(File, self).__contains__("data"):
