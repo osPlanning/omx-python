@@ -117,8 +117,7 @@ class File(h5py.File):
             # Shape is stored as a numpy.array:
             arrayshape = self.attrs["SHAPE"]
             # which must be converted to a tuple:
-            realshape = (arrayshape[0], arrayshape[1])
-            self._shape = realshape
+            self._shape = (arrayshape[0], arrayshape[1])
             return self._shape
 
         # Inspect the first Dataset object to determine its shape
@@ -133,22 +132,19 @@ class File(h5py.File):
                 if self.mode != "r":
                     storeshape = np.array([self._shape[0], self._shape[1]], dtype="int32")
                     self.attrs["SHAPE"] = storeshape
+                    self.flush()
 
                 return self._shape
-        return None
+        raise ShapeError("File shape is not set.")
 
     def list_matrices(self):
-        """
-        List the matrix names in this File
-        """
+        """List the matrix names in this File"""
         if super(File, self).__contains__("data"):
             return list(super(File, self).__getitem__("data").keys())
         return []
 
     def list_all_attributes(self):
-        """
-        Return set of all attributes used for any Matrix in this File
-        """
+        """Return set of all attributes used for any Matrix in this File"""
         all_tags = set()
         if super(File, self).__contains__("data"):
             data_group = super(File, self).__getitem__("data")
@@ -174,61 +170,55 @@ class File(h5py.File):
         try:
             lookup = super(File, self).__getitem__("lookup")
             del lookup[title]
+            self.flush()
         except Exception:
             raise LookupError(f"No such mapping: {title}")
 
-    def mapping(self, title):
-        """
-        Return dict containing key:value pairs for specified mapping.
-        """
+    def delete_matrix(self, name):
+        """Remove a matrix."""
         try:
-            # fetch entries
-            if not super(File, self).__contains__("lookup"):
-                raise LookupError(f"No such mapping: {title}")
+            data_group = super(File, self).__getitem__("data")
+            del data_group[name]
+            self.flush()
+        except Exception:
+            raise LookupError(f"No such matrix: {name}")
 
-            lookup = super(File, self).__getitem__("lookup")
-            if title not in lookup:
-                raise LookupError(f"No such mapping: {title}")
-
-            entries = lookup[title][:]
-
-            # build reverse key-lookup
-            keymap = {}
-            for i in range(len(entries)):
-                keymap[entries[i]] = i
-
-            return keymap
-
-        except Exception as e:
-            if isinstance(e, LookupError):
-                raise e
+    def mapping(self, title):
+        """Return dict containing key:value pairs for specified mapping."""
+        # fetch entries
+        if not super(File, self).__contains__("lookup"):
             raise LookupError(f"No such mapping: {title}")
+
+        lookup = super(File, self).__getitem__("lookup")
+        if title not in lookup:
+            raise LookupError(f"No such mapping: {title}")
+
+        entries = lookup[title][:]
+
+        # build reverse key-lookup
+        keymap = {}
+        for i in range(len(entries)):
+            keymap[entries[i]] = i
+
+        return keymap
 
     def map_entries(self, title):
         """Return a list of entries for the specified mapping."""
-        try:
-            if not super(File, self).__contains__("lookup"):
-                raise LookupError(f"No such mapping: {title}")
-
-            lookup = super(File, self).__getitem__("lookup")
-            if title not in lookup:
-                raise LookupError(f"No such mapping: {title}")
-
-            entries = lookup[title][:]
-            # Convert to list if it's a numpy array
-            if hasattr(entries, "tolist"):
-                return entries.tolist()
-            return entries
-
-        except Exception as e:
-            if isinstance(e, LookupError):
-                raise e
+        if not super(File, self).__contains__("lookup"):
             raise LookupError(f"No such mapping: {title}")
 
+        lookup = super(File, self).__getitem__("lookup")
+        if title not in lookup:
+            raise LookupError(f"No such mapping: {title}")
+
+        entries = lookup[title][:]
+        # Convert to list if it's a numpy array
+        if hasattr(entries, "tolist"):
+            return entries.tolist()
+        return entries
+
     def create_mapping(self, title, entries, overwrite=False):
-        """
-        Create an equivalency index.
-        """
+        """Create an equivalency index."""
 
         # Enforce shape-checking
         if self.shape():
