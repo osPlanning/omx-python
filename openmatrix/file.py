@@ -135,7 +135,7 @@ class File(h5py.File):
                     self.flush()
 
                 return self._shape
-        raise ShapeError("File shape is not set.")
+        return None
 
     def list_matrices(self):
         """List the matrix names in this File"""
