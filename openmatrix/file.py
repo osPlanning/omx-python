@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import h5py
 
@@ -155,18 +157,14 @@ class File(h5py.File):
 
     # MAPPINGS -----------------------------------------------
     def list_mappings(self):
-        """
-        List all mappings in this file
-        """
+        """  List all mappings in this file """
         if super(File, self).__contains__("lookup"):
             return list(super(File, self).__getitem__("lookup").keys())
 
         return []
 
     def delete_mapping(self, title):
-        """
-        Remove a mapping.
-        """
+        """ Remove a mapping. """
         try:
             lookup = super(File, self).__getitem__("lookup")
             del lookup[title]
@@ -175,7 +173,7 @@ class File(h5py.File):
             raise LookupError(f"No such mapping: {title}")
 
     def delete_matrix(self, name):
-        """Remove a matrix."""
+        """ Remove a matrix."""
         try:
             data_group = super(File, self).__getitem__("data")
             del data_group[name]
@@ -184,7 +182,8 @@ class File(h5py.File):
             raise LookupError(f"No such matrix: {name}")
 
     def mapping(self, title):
-        """Return dict containing key:value pairs for specified mapping."""
+        """ Return dict containing key:value pairs for specified mapping. """
+
         # fetch entries
         if not super(File, self).__contains__("lookup"):
             raise LookupError(f"No such mapping: {title}")
@@ -305,7 +304,7 @@ class File(h5py.File):
         return 0
 
     def __setitem__(self, key, dataset):
-        # We need to determine atom and shape from the object that's been passed in.
+        # We need to determine dtype and shape from the object that's been passed in.
         # This assumes 'dataset' is a numpy object.
 
         # Check if it's already an h5py dataset (copy?)
@@ -337,8 +336,8 @@ class File(h5py.File):
         # Try standard delete
         try:
             super(File, self).__delitem__(key)
-        except Exception:
-            pass
+        except Exception as e:
+            logging.debug(f"Failed to delete key {key}: {e.args}")
 
     def __iter__(self):
         """Iterate over the keys in this container"""
