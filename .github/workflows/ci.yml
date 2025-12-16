@@ -1,6 +1,11 @@
 name: Python package
 
-on: [push, pull_request]
+on:
+ push:
+    branches:
+      - 'master'
+ pull_request:
+
 
 jobs:
   lint:
@@ -23,6 +28,9 @@ jobs:
   test:
     needs: lint
     runs-on: ${{ matrix.os }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
