@@ -65,7 +65,7 @@ def test_add_numpy_matrix_using_brackets():
         assert f.shape() == (5, 5)
 
         # test check for shape matching
-        with pytest.raises(omx.Exceptions.ShapeError):
+        with pytest.raises(omx.exceptions.ShapeError):
             f.create_matrix('m2', obj=np.ones((8, 8)))
 
 def test_add_numpy_matrix_using_create_matrix():
