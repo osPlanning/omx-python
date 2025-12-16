@@ -12,15 +12,21 @@ The Python OMX API borrows heavily from PyTables. An OMX file extends the equiva
 
 # Pre-requisites
 
-Python 2.6+, PyTables 3.1+, and NumPy. Python 3 is now supported too. 
+Python 3.10+, h5py 3.0+, and NumPy. 
 
-On Windows, the easiest way to get these is from [Anaconda](https://www.continuum.io/downloads#windows) or from Chris Gohlke's python binaries [page](http://www.lfd.uci.edu/~gohlke/pythonlibs/).  On Linux, your distribution already has these available. 
+Binaries for all these dependencies are readily available from PyPI and can be installed via pip.
 
 # Installation
 
 The easiest way to get OMX on Python is to use pip. Get the latest package (called OpenMatrix) from the [Python Package Index](https://pypi.python.org/pypi)
 
   `pip install openmatrix`
+
+Using uv is also possible and much faster:
+
+  `pip install uv`
+  `uv pip install openmatrix`
+
 
 This command will fetch openmatrix from the PyPi repository and download/install it for you. The package name "omx" was already taken on pip for a lame xml library that no one uses. Thus our little project goes by "openmatrix" on pip instead of "omx". This means your import statements should look like, 
 
@@ -33,31 +39,30 @@ and NOT:
 # Quick-Start Sample Code
 
 ```python
-from __future__ import print_function
 import openmatrix as omx
 import numpy as np
 
 # Create some data
-ones = np.ones((100,100))
-twos = 2.0*ones
+ones = np.ones((100, 100))
+twos = 2.0 * ones
 
 # Create an OMX file (will overwrite existing file!)
 print('Creating myfile.omx')
-myfile = omx.open_file('myfile.omx','w')   # use 'a' to append/edit an existing file
+myfile = omx.open_file('myfile.omx', 'w')  # use 'a' to append/edit an existing file
 
 # Write to the file.
 myfile['m1'] = ones
 myfile['m2'] = twos
-myfile['m3'] = ones + twos           # numpy array math is fast
+myfile['m3'] = ones + twos  # numpy array math is fast
 myfile.close()
 
 # Open an OMX file for reading only
 print('Reading myfile.omx')
 myfile = omx.open_file('myfile.omx')
 
-print ('Shape:', myfile.shape())                 # (100,100)
-print ('Number of tables:', len(myfile))         # 3
-print ('Table names:', myfile.list_matrices())   # ['m1','m2',',m3']
+print('Shape:', myfile.shape())  # (100,100)
+print('Number of tables:', len(myfile))  # 3
+print('Table names:', myfile.list_matrices())  # ['m1','m2',',m3']
 
 # Work with data. Pass a string to select matrix by name:
 # -------------------------------------------------------
@@ -76,8 +81,8 @@ my_very_special_zone_value = m2[10][25]
 
 # FANCY: Use attributes to find matrices
 # --------------------------------------
-myfile.close()                            # was opened read-only, so let's reopen.
-myfile = omx.open_file('myfile.omx','a')  # append mode: read/write existing file
+myfile.close()  # was opened read-only, so let's reopen.
+myfile = omx.open_file('myfile.omx', 'a')  # append mode: read/write existing file
 
 myfile['m1'].attrs.timeperiod = 'am'
 myfile['m1'].attrs.mode = 'hwy'
@@ -87,13 +92,13 @@ myfile['m2'].attrs.timeperiod = 'md'
 myfile['m3'].attrs.timeperiod = 'am'
 myfile['m3'].attrs.mode = 'trn'
 
-print('attributes:', myfile.list_all_attributes())       # ['mode','timeperiod']
+print('attributes:', myfile.list_all_attributes())  # ['mode','timeperiod']
 
 # Use a DICT to select matrices via attributes:
 
-all_am_trips = myfile[ {'timeperiod':'am'} ]                    # [m1,m3]
-all_hwy_trips = myfile[ {'mode':'hwy'} ]                        # [m1]
-all_am_trn_trips = myfile[ {'mode':'trn','timeperiod':'am'} ]   # [m3]
+all_am_trips = myfile[{'timeperiod': 'am'}]  # [m1,m3]
+all_hwy_trips = myfile[{'mode': 'hwy'}]  # [m1]
+all_am_trn_trips = myfile[{'mode': 'trn', 'timeperiod': 'am'}]  # [m3]
 
 print('sum of some tables:', np.sum(all_am_trips))
 
@@ -102,20 +107,20 @@ print('sum of some tables:', np.sum(all_am_trips))
 # (any mapping would work, such as a mapping with large gaps between zone
 #  numbers. For this simple case we'll just assume TAZ numbers are 1-100.)
 
-taz_equivs = np.arange(1,101)                  # 1-100 inclusive
+taz_equivs = np.arange(1, 101)  # 1-100 inclusive
 
 myfile.create_mapping('taz', taz_equivs)
-print('mappings:', myfile.list_mappings()) # ['taz']
+print('mappings:', myfile.list_mappings())  # ['taz']
 
-tazs = myfile.mapping('taz') # Returns a dict:  {1:0, 2:1, 3:2, ..., 100:99}
+tazs = myfile.mapping('taz')  # Returns a dict:  {1:0, 2:1, 3:2, ..., 100:99}
 m3 = myfile['m3']
-print('cell value:', m3[tazs[100]][tazs[100]]) # 3.0  (taz (100,100) is cell [99][99])
+print('cell value:', m3[tazs[100]][tazs[100]])  # 3.0  (taz (100,100) is cell [99][99])
 
 myfile.close()
 ```
 
 # Testing
-Testing is done with [nose](https://nose.readthedocs.io/en/latest/).  Run the tests via:
+Testing is done with [pytest](https://nose.readthedocs.io/en/latest/).  Run the tests via:
 
 ```
 openmatrix\test> nosetests -v
@@ -162,7 +167,7 @@ Once you have a matrix object, you can perform normal numpy math on it or you ca
 
 ```python
 myfile['biketime'][0][0] = 0.60 * myfile['bikedist'][0][0]
-total_trips = numpy.sum(myfile.root.trips)`
+total_trips = np.sum(myfile.root.trips)`
 ```
 
 ### Properties

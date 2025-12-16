@@ -137,7 +137,6 @@ def check10(mat_file, required=False, checknum=10):
 def check11(mat_file, required=False, checknum=11):
     try:
         print('\nCheck 11: Uses common data types (int or str) for lookups')
-        is_int = lambda x: x == int
         ok = False
         if 'lookup' in map(lambda x: x._v_name, mat_file.list_nodes("/")):
             ok = True
@@ -174,7 +173,7 @@ def run_checks(filename):
         raise FileNotFoundError(filename)
     try:
         mat_file = open_file(filename)
-    except:
+    except Exception:
         print("Unable to open", filename, "using HDF5")
     else:
         try:
