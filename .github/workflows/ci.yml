@@ -17,11 +17,11 @@ jobs:
         with:
           python-version: '3.13'
 
-      - uses: astral-sh/ruff-action@v3
+      - uses: astral-sh/ruff-action@v1
         with:
           args: format --check
 
-      - uses: astral-sh/ruff-action@v3
+      - uses: astral-sh/ruff-action@v1
         with:
           args: check --output-format=github
 
