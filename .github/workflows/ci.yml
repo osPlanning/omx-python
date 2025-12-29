@@ -19,10 +19,12 @@ jobs:
 
       - uses: astral-sh/ruff-action@v2
         with:
+          version: "0.14.10"  # Pin the version to match pyproject.toml
           args: format --check
 
       - uses: astral-sh/ruff-action@v2
         with:
+          version: "0.14.10"  # Pin the version to match pyproject.toml
           args: check --output-format=github
 
 
