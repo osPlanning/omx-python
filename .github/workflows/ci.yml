@@ -12,20 +12,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set Python environment
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
 
-      - uses: astral-sh/ruff-action@v2
-        with:
-          version: "0.14.10"  # Pin the version to match pyproject.toml
-          args: format --check
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
 
-      - uses: astral-sh/ruff-action@v2
-        with:
-          version: "0.14.10"  # Pin the version to match pyproject.toml
-          args: check --output-format=github
+      - name: Set up Python 3.13
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Format check
+        run: uv run ruff format --check
+
+      - name: Lint check
+        run: uv run ruff check --output-format=github
 
 
   test:
