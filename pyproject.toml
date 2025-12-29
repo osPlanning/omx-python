@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "OpenMatrix"
+version = "0.4.0"
+description = "OMX, the open matrix data format"
+readme = "README.txt"
+requires-python = ">=3.9"
+authors = [
+  { name = "Billy Charlton", email = "billy@okbecause.com" },
+  { name = "Ben Stabler", email = "benstabler@yahoo.com" },
+]
+license = { file = "LICENSE.TXT" }
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+keywords = ["openmatrix", "omx"]
+dependencies = [
+    "h5py >= 2.10.0",
+    "numpy >= 1.5.0",
+]
+
+
+[project.optional-dependencies]
+
+dev = [
+  "pytest",
+  "ruff == 0.14.10"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/osPlanning/omx"
+
+[project.scripts]
+omx-validate = "openmatrix.validator:command_line"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = []
