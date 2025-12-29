@@ -355,9 +355,14 @@ class File(h5py.File):
             return iter([])
 
     def __contains__(self, item):
+        # Respect root-level members first (e.g., data/lookup groups or attrs exposed by h5py)
+        if super(File, self).__contains__(item):
+            return True
+
         if super(File, self).__contains__("data"):
             data_group = super(File, self).__getitem__("data")
             return item in data_group
+
         return False
 
     # BACKWARD COMPATIBILITY:

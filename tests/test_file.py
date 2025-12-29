@@ -133,6 +133,20 @@ def test_contains():
         assert "m1" in f
 
 
+def test_contains_groups_and_datasets():
+    with omx.open_file(TEST_FILE, "w") as f:
+        # groups auto-created in writable mode
+        assert "data" in f
+        assert "lookup" in f
+
+        f.create_mapping("zones", entries=np.array([1, 2, 3]))
+        f.create_matrix("m1", obj=np.ones((5, 5)))
+
+        assert "m1" in f  # dataset inside data
+        assert "zones" in f.lookup  # dataset inside lookup group
+        assert "missing" not in f
+
+
 def test_list_all_attrs():
     with omx.open_file(TEST_FILE, "w") as f:
         add_m1_node(f)
@@ -204,3 +218,15 @@ def test_mappings():
         assert entries == [1, 2, 3]
         with pytest.raises(LookupError):
             f.map_entries("missing")
+
+
+def test_open_existing_with_append_mode():
+    # Create file and add a matrix
+    with omx.open_file(TEST_FILE, "w") as f:
+        data = np.arange(9, dtype=float).reshape(3, 3)
+        f.create_matrix("my_matrix", obj=data)
+
+    # Re-open in append mode and ensure dataset is accessible
+    with omx.open_file(TEST_FILE, "a") as f:
+        assert "my_matrix" in f
+        npt.assert_array_equal(f["my_matrix"], data)
