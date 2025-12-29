@@ -120,10 +120,10 @@ myfile.close()
 ```
 
 # Testing
-Testing is done with [pytest](https://nose.readthedocs.io/en/latest/).  Run the tests via:
+Testing is done with [pytest](https://docs.pytest.org/).  Run the tests via:
 
 ```
-openmatrix\test> nosetests -v
+pytest
 ```
 
 # OMX File Validator
@@ -137,7 +137,7 @@ omx-validate my_file.omx
 
 ### File Objects
 
-OMX File objects extend Pytables.File, so all Pytables functions work normally. We've also added some useful stuff to make things even easier.
+OMX File objects extend h5py.File, so all h5py functions work normally. We've also added some useful stuff to make things even easier.
 
 ### Writing Data
 
@@ -170,7 +170,7 @@ total_trips = np.sum(myfile.root.trips)`
 ```
 
 ### Properties
-Every Matrix has its own dictionary of key/value pair attributes (properties) which can be accessed using the standard Pytables .attrs field.  Add as many attributes as you like; attributes can be string, ints, floats, and lists:
+Every Matrix has its own dictionary of key/value pair attributes (properties) which can be accessed using the standard h5py .attrs field.  Add as many attributes as you like; attributes can be string, ints, floats, and lists:
 
 ```python
 print mymatrix.attrs
