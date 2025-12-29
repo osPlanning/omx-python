@@ -43,3 +43,10 @@ omx-validate = "openmatrix.validator:command_line"
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = []

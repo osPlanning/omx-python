@@ -12,9 +12,10 @@ class File(h5py.File):
     and mappings in an OMX file.
     """
 
-    def __init__(self, name, mode="r", title="", **kwargs):
+    def __init__(self, name, mode="r", title="", filters=None, **kwargs):
         super(File, self).__init__(name, mode, **kwargs)
         self._shape = None
+        self.default_filters = filters
 
     def version(self):
         """
@@ -53,18 +54,23 @@ class File(h5py.File):
 
         # If filters is passed (it might be a tables.Filters object or a dict or None)
         # We'll try to parse basic stuff or just use defaults if it's the standard OMX one
+        filters = filters or self.default_filters
+
         if filters:
-            if hasattr(filters, "complib"):
-                if filters.complib == "zlib":
-                    compression = "gzip"
-                elif filters.complib:
-                    compression = filters.complib
+            # Handle dict
+            if isinstance(filters, dict):
+                compression = filters.get("complib")
+                compression_opts = filters.get("complevel")
+                shuffle = filters.get("shuffle")
 
-                if hasattr(filters, "complevel"):
-                    compression_opts = filters.complevel
-                if hasattr(filters, "shuffle"):
-                    shuffle = filters.shuffle
+            # Handle object with attributes (like tables.Filters)
+            elif hasattr(filters, "complib"):
+                compression = filters.complib if filters.complib else compression
+                compression_opts = filters.complevel if hasattr(filters, "complevel") else compression_opts
+                shuffle = filters.shuffle if hasattr(filters, "shuffle") else shuffle
 
+
+        compression = "gzip" if compression == "zlib" else compression
         # Defaults if not specified but standard in OMX (zlib 1)
         # Actually tables default in __init__ was passed.
         # h5py doesn't have a default file-wide filter.

@@ -14,9 +14,10 @@ def open_file(filename):
 
 
 def check1(mat_file, required=True, checknum=1):
+    """Check 1: Has OMX_VERSION attribute set to 0.2"""
     try:
         print("\nCheck 1: Has OMX_VERSION attribute set to 0.2")
-        ok = mat_file.root._v_attrs["OMX_VERSION"] == b"0.2"
+        ok = mat_file.attrs.get("OMX_VERSION") == b"0.2"
         print("  File version is 0.2:", pass_or_fail(ok))
         return (ok, required, checknum)
     except Exception as err:
@@ -24,24 +25,27 @@ def check1(mat_file, required=True, checknum=1):
 
 
 def check2(mat_file, required=True, checknum=2):
+    """Check 2: Has SHAPE array attribute set to two item integer array"""
     try:
         print("\nCheck 2: Has SHAPE array attribute set to two item integer array")
-        ok = len(mat_file.root._v_attrs["SHAPE"]) == 2
+        shape_attr = mat_file.attrs.get("SHAPE")
+        ok = shape_attr is not None and len(shape_attr) == 2
         print("  Length is 2:", pass_or_fail(ok))
-        ok_2 = int(mat_file.root._v_attrs["SHAPE"][0]) == mat_file.root._v_attrs["SHAPE"][0]
+        ok_2 = int(shape_attr[0]) == shape_attr[0] if ok else False
         print("  First item is integer:", pass_or_fail(ok_2))
-        ok_3 = int(mat_file.root._v_attrs["SHAPE"][1]) == mat_file.root._v_attrs["SHAPE"][1]
+        ok_3 = int(shape_attr[1]) == shape_attr[1] if ok else False
         print("  Second item is integer:", pass_or_fail(ok_3))
         print("  Shape:", mat_file.shape())
-        return (ok * ok_2 * ok_3, required, checknum)
+        return (ok and ok_2 and ok_3, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check3(mat_file, required=True, checknum=3):
+    """Check 3: Has data group for matrices"""
     try:
         print("\nCheck 3: Has data group for matrices")
-        ok = "data" in map(lambda x: x._v_name, mat_file.list_nodes("/"))
+        ok = "data" in mat_file.keys()
         print("  Group:", pass_or_fail(ok))
         print("  Number of Matrices:", len(mat_file))
         print("  Matrix names:", mat_file.list_matrices())
@@ -51,86 +55,100 @@ def check3(mat_file, required=True, checknum=3):
 
 
 def check4(mat_file, required=True, checknum=4):
+    """Check 4: Matrix shape matches file shape"""
     try:
         print("\nCheck 4: Matrix shape matches file shape")
         ok = True
+        shape_attr = mat_file.attrs.get("SHAPE")
+        file_shape = tuple(shape_attr) if shape_attr is not None else None
         for matrix in mat_file.list_matrices():
-            ok_2 = (mat_file[matrix].shape == mat_file.root._v_attrs["SHAPE"]).all()
-            print("  Matrix shape: ", matrix, ":", mat_file[matrix].shape, ":", pass_or_fail(ok_2))
-            ok = ok * ok_2
+            matrix_shape = mat_file[matrix].shape
+            ok_2 = matrix_shape == file_shape
+            print("  Matrix shape: ", matrix, ":", matrix_shape, ":", pass_or_fail(ok_2))
+            ok = ok and ok_2
         return (ok, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check5(mat_file, required=True, checknum=5):
+    """Check 5: Uses common data types (float or int) for matrices"""
     try:
         print("\nCheck 5: Uses common data types (float or int) for matrices")
         ok = True
         for matrix in mat_file.list_matrices():
-            ok_2 = (mat_file[matrix].dtype == float) or (mat_file[matrix].dtype == int)
-            print("  Matrix: ", matrix, ":", mat_file[matrix].dtype, ":", pass_or_fail(ok_2))
-            ok = ok * ok_2
+            dtype = mat_file[matrix].dtype
+            ok_2 = dtype.kind in ("f", "i", "u")  # float, signed int, unsigned int
+            print("  Matrix: ", matrix, ":", dtype, ":", pass_or_fail(ok_2))
+            ok = ok and ok_2
         return (ok, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check6(mat_file, required=True, checknum=6):
+    """Check 6: Matrices chunked for faster I/O"""
     try:
         print("\nCheck 6: Matrices chunked for faster I/O")
         ok = True
         for matrix in mat_file.list_matrices():
-            ok_2 = True if mat_file[matrix].chunkshape is not None else False
-            print("  Matrix chunkshape: ", matrix, ":", mat_file[matrix].chunkshape, ":", pass_or_fail(ok_2))
-            ok = ok * ok_2
+            chunks = mat_file[matrix].chunks
+            ok_2 = chunks is not None
+            print("  Matrix chunks: ", matrix, ":", chunks, ":", pass_or_fail(ok_2))
+            ok = ok and ok_2
         return (ok, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check7(mat_file, required=False, checknum=7):
+    """Check 7: Uses zlib/gzip compression if compression used"""
     try:
-        print("\nCheck 7: Uses zlib compression if compression used")
+        print("\nCheck 7: Uses zlib/gzip compression if compression used")
         ok = True
         for matrix in mat_file.list_matrices():
-            ok_2 = True if mat_file[matrix].filters.complib is not None else False
-            if ok_2:
-                ok_3 = mat_file[matrix].filters.complib == "zlib"
-                ok_2 = ok_2 * ok_3
+            compression = mat_file[matrix].compression
+            compression_opts = mat_file[matrix].compression_opts
+            if compression is not None:
+                # h5py uses 'gzip' for zlib compression
+                ok_2 = compression == "gzip"
                 print(
                     "  Matrix compression library and level: ",
                     matrix,
                     ":",
-                    mat_file[matrix].filters.complib,
+                    compression,
                     ":",
-                    mat_file[matrix].filters.complevel,
+                    compression_opts,
                     ":",
                     pass_or_fail(ok_2),
                 )
-            ok = ok * ok_2
+                ok = ok and ok_2
+            else:
+                print("  Matrix compression: ", matrix, ": None")
         return (ok, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check8(mat_file, required=False, checknum=8):
+    """Check 8: Has NA attribute if desired (but not required)"""
     try:
         print("\nCheck 8: Has NA attribute if desired (but not required)")
         ok = True
         for matrix in mat_file.list_matrices():
-            ok_2 = mat_file[matrix].attrs.__contains__("NA")
+            ok_2 = "NA" in mat_file[matrix].attrs
             print("  Matrix NA attribute: ", matrix, ":", pass_or_fail(ok_2))
-            ok = ok * ok_2
+            ok = ok and ok_2
         return (ok, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check9(mat_file, required=False, checknum=9):
+    """Check 9: Has lookup group for labels/indexes if desired (but not required)"""
     try:
         print("\nCheck 9: Has lookup group for labels/indexes if desired (but not required)")
-        ok = "lookup" in map(lambda x: x._v_name, mat_file.list_nodes("/"))
+        ok = "lookup" in mat_file.keys()
         print("  Group:", pass_or_fail(ok))
         if ok:
             print("  Number of Lookups:", len(mat_file.list_mappings()))
@@ -141,50 +159,51 @@ def check9(mat_file, required=False, checknum=9):
 
 
 def check10(mat_file, required=False, checknum=10):
+    """Check 10: Lookup shapes are 1-d and match file shape"""
     try:
         print("\nCheck 10: Lookup shapes are 1-d and match file shape")
         ok = False
-        if "lookup" in map(lambda x: x._v_name, mat_file.list_nodes("/")):
+        if "lookup" in mat_file.keys():
             ok = True
-            for lookup in mat_file.list_mappings():
-                this_shape = mat_file.get_node(mat_file.root.lookup, lookup).shape
-                ok_2 = len(this_shape) == 1 and this_shape[0] in mat_file.root._v_attrs["SHAPE"]
-                print("  Lookup: ", lookup, ":", this_shape, ":", pass_or_fail(ok_2))
-                ok = ok * ok_2
+            shape_attr = mat_file.attrs.get("SHAPE")
+            file_shape = tuple(shape_attr) if shape_attr is not None else ()
+            lookup_group = mat_file["lookup"]
+            for lookup_name in mat_file.list_mappings():
+                this_shape = lookup_group[lookup_name].shape
+                ok_2 = len(this_shape) == 1 and this_shape[0] in file_shape
+                print("  Lookup: ", lookup_name, ":", this_shape, ":", pass_or_fail(ok_2))
+                ok = ok and ok_2
         return (ok, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check11(mat_file, required=False, checknum=11):
+    """Check 11: Uses common data types (int or str) for lookups"""
     try:
         print("\nCheck 11: Uses common data types (int or str) for lookups")
         ok = False
-        if "lookup" in map(lambda x: x._v_name, mat_file.list_nodes("/")):
+        if "lookup" in mat_file.keys():
             ok = True
-            for lookup in mat_file.list_mappings():
-                try:
-                    ok_2 = all(map(lambda x: x == int(x), mat_file.mapping(lookup).keys()))
-                except ValueError:
-                    ok_2 = None
-                if not ok_2:
-                    ok_2 = all(map(lambda x: x == str(x), mat_file.mapping(lookup).keys()))
-                if not ok_2:
-                    ok_2 = all(map(lambda x: x == bytes(x), mat_file.mapping(lookup).keys()))
-                this_dtype = mat_file.get_node(mat_file.root.lookup, lookup).dtype
-                print("  Lookup: ", lookup, ":", this_dtype, ":", pass_or_fail(ok_2))
-                ok = ok * ok_2
+            lookup_group = mat_file["lookup"]
+            for lookup_name in mat_file.list_mappings():
+                dtype = lookup_group[lookup_name].dtype
+                # Check if integer or string type
+                ok_2 = dtype.kind in ("i", "u", "S", "U", "O")
+                print("  Lookup: ", lookup_name, ":", dtype, ":", pass_or_fail(ok_2))
+                ok = ok and ok_2
         return (ok, required, checknum)
     except Exception as err:
         return (False, required, checknum, str(err))
 
 
 def check12(mat_file, required=False, checknum=12):
+    """Check 12: Has Lookup DIM attribute of 0 (row) or 1 (column) if desired (but not required)"""
     try:
         print("\nCheck 12: Has Lookup DIM attribute of 0 (row) or 1 (column) if desired (but not required)")
         print("  Not supported at this time by the Python openmatrix package")
         ok = False
-        if "lookup" in map(lambda x: x._v_name, mat_file.list_nodes("/")):
+        if "lookup" in mat_file.keys():
             ok = False
         return (ok, required, checknum)
     except Exception as err:
@@ -228,7 +247,7 @@ def run_checks(filename):
                         pass_or_fail(result[0]),
                     )
                 if result[1]:
-                    overall_ok = overall_ok * result[0]
+                    overall_ok = overall_ok and result[0]
             print("  Overall : ", pass_or_fail(overall_ok))
         finally:
             mat_file.close()

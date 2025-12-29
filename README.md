@@ -1,6 +1,6 @@
 # OMX Python API Documentation
 
-The Python OMX API borrows heavily from PyTables. An OMX file extends the equivalent PyTables File object, so anything you can do in PyTables you can do with OMX as well. This API attempts to be very Pythonic, including dictionary-style lookup of matrix names.
+The Python OMX API is built on top of h5py. An OMX file extends the equivalent h5py File object, so anything you can do in h5py you can do with OMX as well. This API attempts to be very Pythonic, including dictionary-style lookup of matrix names.
 
 * [Pre-requisites](#pre-requisites)
 * [Installation](#installation)
@@ -12,7 +12,7 @@ The Python OMX API borrows heavily from PyTables. An OMX file extends the equiva
 
 # Pre-requisites
 
-Python 3.10+, h5py 3.0+, and NumPy. 
+Python 3.9+, h5py 2.10+, and NumPy. 
 
 Binaries for all these dependencies are readily available from PyPI and can be installed via pip.
 
@@ -153,15 +153,14 @@ will call createMatrix() for you and populate it with the specified array.
 
 ### Accessing Data
 
-You can access matrix objects by name, using dictionary lookup e.g. `myfile['hwydist']` or using PyTables path notation, e.g. `myfile.root.hwydist`
+You can access matrix objects by name, using dictionary lookup e.g. `myfile['hwydist']`.
 
 ### Matrix objects
 
-OMX matrices extend numpy arrays. An OMX matrix object extends a Pytables/HDF5 "node" which means all HDF5 methods and properties behave normally. Generally these datasets are going to be numpy CArray objects of arbitrary shape.
+OMX matrices are h5py Dataset objects. An OMX matrix object extends an h5py Dataset which means all h5py methods and properties behave normally.
 You can access a matrix object by name using:
 
 * dictionary syntax, e.g. `myfile['hwydist']`
-* or by Pytables path syntax, e.g. `myfile.root.hwydist`
 
 Once you have a matrix object, you can perform normal numpy math on it or you can access rows and columns pythonically:
 
@@ -207,7 +206,7 @@ OMX module version string.  Currently '0.3.5' as of this writing. This is the Py
 ### `__omx_version__`
 OMX file format version. Currently '0.2'. This is the OMX file format specification that omx-python adheres to.
 
-### `open_file`(filename, mode='r', title='', root_uep='/', filters=Filters(complevel=1, complib='zlib', shuffle=True, bitshuffle=False, fletcher32=False, least_significant_digit=None), shape=None, **kwargs)
+### `open_file`(filename, mode='r', title='', filters=None, shape=None, **kwargs)
         Open or create a new OMX file. New files will be created with default
         zlib compression enabled.
         
@@ -223,7 +222,7 @@ OMX file format version. Currently '0.2'. This is the OMX file format specificat
         title : string
             Short description of this file, used when creating the file. Default is ''.
             Ignored in read-only mode.
-        filters : tables.Filters
+        filters : dict
             HDF5 default filter options for compression, shuffling, etc. Default for
             OMX standard file format is: zlib compression level 1, and shuffle=True. 
             Only specify this if you want something other than the recommended standard 
@@ -263,15 +262,15 @@ OMX file format version. Currently '0.2'. This is the OMX file format specificat
         
         Returns:
         --------
-        mapping : tables.array
+        mapping : h5py.Dataset
             Returns the created mapping.
         
         Raises:
             LookupError : if the mapping exists and overwrite=False
     
-### `create_matrix`(self, name, atom=None, shape=None, title='', filters=None, chunkshape=None, byteorder=None, createparents=False, obj=None, attrs=None)
-        Create an OMX Matrix (CArray) at the root level. User must pass in either
-        an existing numpy matrix, or a shape and an atom type.
+### `create_matrix`(self, name, shape=None, title='', filters=None, chunks=True, obj=None, dtype=None, attrs=None)
+        Create an OMX Matrix (Dataset) at the root level. User must pass in either
+        an existing numpy matrix, or a shape and a dtype.
         
         Parameters
         ----------
@@ -279,30 +278,32 @@ OMX file format version. Currently '0.2'. This is the OMX file format specificat
             The name of this matrix. Stored in HDF5 as the leaf name.
         title : string
             Short description of this matrix. Default is ''.
-        obj : numpy.CArray
+        obj : numpy.ndarray
             Existing numpy array from which to create this OMX matrix. If obj is passed in,
-            then shape and atom can be left blank. If obj is not passed in, then a shape and
-            atom must be specified instead. Default is None.
+            then shape and dtype can be left blank. If obj is not passed in, then a shape and
+            dtype must be specified instead. Default is None.
         shape : numpy.array
             Optional shape of the matrix. Shape is an int32 numpy array of format (rows,columns).
-            If shape is not specified, an existing numpy CArray must be passed in instead, 
+            If shape is not specified, an existing numpy array must be passed in instead, 
             as the 'obj' parameter. Default is None.
-        atom : atom_type
-            Optional atom type of the data. Can be int32, float32, etc. Default is None.
+        dtype : dtype
+            Optional data type of the data. Can be 'int32', 'float32', etc. Default is None.
             If None specified, then obj parameter must be passed in instead.
-        filters : tables.Filters
+        filters : dict
             Set of HDF5 filters (compression, etc) used for creating the matrix. 
             Default is None. See HDF5 documentation for details. Note: while the default here
             is None, the default set of filters set at the OMX parent file level is 
             zlib compression level 1. Those settings usually trickle down to the table level.
+        chunks : tuple or bool
+            Chunk shape, or True to enable auto-chunking. Default is True.
         attrs : dict
             Dictionary of attribute names and values to be attached to this matrix.
             Default is None.
         
         Returns
         -------
-        matrix : tables.carray
-            HDF5 CArray matrix
+        matrix : h5py.Dataset
+            HDF5 Dataset matrix
     
 ### `delete_mapping`(self, title)
         Remove a mapping.

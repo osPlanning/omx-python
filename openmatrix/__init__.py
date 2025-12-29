@@ -49,7 +49,7 @@ def open_file(filename, mode="r", title="", filters=None, shape=None, **kwargs):
     if filters is None and mode != "r":
         filters = {"complib": "zlib", "complevel": 1, "shuffle": True}
 
-    f = File(filename, mode, title=title, **kwargs)
+    f = File(filename, mode, title=title, filters=filters, **kwargs)
 
     # add omx structure if file is writable
     if mode != "r":
@@ -61,7 +61,7 @@ def open_file(filename, mode="r", title="", filters=None, shape=None, **kwargs):
 
         # shape
         if shape:
-            storeshape = np.zeros([shape[0], shape[1]], dtype=np.int32)
+            storeshape = np.array([shape[0], shape[1]], dtype=np.int32)
             f.attrs["SHAPE"] = storeshape
 
         # /data and /lookup folders
