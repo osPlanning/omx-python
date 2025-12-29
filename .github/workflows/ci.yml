@@ -20,10 +20,7 @@ jobs:
         run: uv python install 3.13
 
       - name: Install dependencies
-        run: uv sync --dev
-
-      - name: Format check
-        run: uv run ruff format --check
+        run: uv sync --dev --all-extras
 
       - name: Lint check
         run: uv run ruff check --output-format=github
@@ -56,6 +53,6 @@ jobs:
 
     - name: Install dependencies and test
       run: |
-        uv sync --dev
+        uv sync --dev --all-extras
         uv run pytest
 
