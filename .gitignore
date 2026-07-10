@@ -21,3 +21,9 @@ nosetests.xml
 
 # Python build directory
 api/python/build
+
+.venv/
+venv/
+pyenv/
+.idea/
+build/

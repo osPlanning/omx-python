@@ -1,0 +1,65 @@
+name: Python package
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+
+
+jobs:
+  lint-coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Lint
+        run: uv run --python ${{ matrix.python-version }} --extra dev ruff check --output-format=github
+
+      - name: Generate coverage report
+        run: |
+          uv run --python ${{ matrix.python-version }} --extra dev \
+            pytest tests/ \
+            --cov=. \
+            --cov-branch \
+            --cov-report=term-missing \
+            --cov-report=html:cov_html \
+            --cov-report=markdown-append:$GITHUB_STEP_SUMMARY \
+            --verbose
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: html-coverage-artifact
+          path: ./cov_html/
+
+  test:
+    needs: lint-coverage
+    runs-on: ${{ matrix.os }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        exclude:
+          - os: macos-latest
+            python-version: "3.9"
+          - os: macos-latest
+            python-version: "3.10"
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v7
+
+    - name: Install and test
+      run: uv run --python ${{ matrix.python-version }} --extra dev pytest
