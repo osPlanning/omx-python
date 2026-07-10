@@ -27,3 +27,5 @@ venv/
 pyenv/
 .idea/
 build/
+dist/
+
