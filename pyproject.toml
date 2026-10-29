@@ -1,15 +1,16 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.13.5,<0.14"]
+build-backend = "uv_build"
 
 [project]
 name = "openmatrix"
-version = "0.4.0b1"
+version = "0.4.0"
 description = "OMX, the open matrix data format"
-readme = "README.txt"
+readme = "README.md"
 requires-python = ">=3.9"
 authors = [
-  { name = "Billy Charlton", email = "billy@okbecause.com" },
+  { name = "Jake Moss", email = "jake@outerloop.io" },
+  { name = "Billy Charlton", email = "mail@billyc.cc" },
   { name = "Ben Stabler", email = "benstabler@yahoo.com" },
 ]
 
@@ -30,7 +31,7 @@ dependencies = [
     "numpy >= 1.5.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "pytest",
   "pytest-cov",
@@ -42,11 +43,6 @@ dev = [
 
 [project.scripts]
 omx-validate = "openmatrix.validator:command_line"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["openmatrix"]
-
 
 [tool.ruff]
 line-length = 120

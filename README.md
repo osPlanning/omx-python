@@ -197,7 +197,7 @@ A mapping allows rows and columns to be accessed using an integer value other th
 ## Global Properties
 
 ### `__version__`
-OMX module version string.  Currently '0.4.0' as of this writing. This is the Python API version.
+OMX module version string, read from the installed package metadata. This is the Python API version.
 
 ### `__omx_version__`
 OMX file format version. Currently '0.2'. This is the OMX file format specification that omx-python adheres to.

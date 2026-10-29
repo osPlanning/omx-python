@@ -20,11 +20,14 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Lint
-        run: uv run --python ${{ matrix.python-version }} --extra dev ruff check --output-format=github
+        run: uv run --locked --python ${{ matrix.python-version }} ruff check --output-format=github
+
+      - name: Build sdist and wheel
+        run: uv build
 
       - name: Generate coverage report
         run: |
-          uv run --python ${{ matrix.python-version }} --extra dev \
+          uv run --locked --python ${{ matrix.python-version }} \
             pytest tests/ \
             --cov=. \
             --cov-branch \
@@ -62,4 +65,4 @@ jobs:
       uses: astral-sh/setup-uv@v7
 
     - name: Install and test
-      run: uv run --python ${{ matrix.python-version }} --extra dev pytest
+      run: uv run --locked --python ${{ matrix.python-version }} pytest

@@ -1,3 +1,4 @@
+from importlib.metadata import version, PackageNotFoundError
 from os import PathLike
 from typing import Optional, Union, Any, Literal
 
@@ -8,7 +9,10 @@ import numpy.typing as npt
 from .exceptions import ShapeError
 
 
-__version__ = "0.4.0"
+try:
+    __version__ = version("openmatrix")
+except PackageNotFoundError:  # running from an uninstalled source tree
+    __version__ = "0.0.0+unknown"
 __omx_version__ = b"0.2"
 
 
